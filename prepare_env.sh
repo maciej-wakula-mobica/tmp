@@ -85,7 +85,7 @@ do
         echo -e "${RED}error, failed to checkout ${repo_name} to ${RC_BRANCH_NAME}${NC}"
         cd ..
         cleanup
-        exit 2
+        exit 3
     fi
     cd ..
 done
