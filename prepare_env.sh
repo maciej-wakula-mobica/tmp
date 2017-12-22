@@ -41,7 +41,7 @@ while true; do
   case "$1" in
     -v | --verbose ) VERBOSE=true; shift ;;
     -b | --branch ) RC_BRANCH_NAME="$2"; shift ;;
-    -n | --nocolor )
+    -n | --no-color )
         RED="";
         GREEN="";
         NC="";
@@ -76,6 +76,15 @@ echo -e "${GREEN}Changing the branch to ${RED}${RC_BRANCH_NAME}.${NC}"
 # change branch
 for repo_name in ${ALL_REPOS_NAMES};
 do
+    case "${repo_name}" in
+        wpw-sdk-iot-core)
+            # ignore changing branch to develop for wpw-sdk-iot-core
+            continue
+            ;;
+        *)
+            ;;
+    esac
+
     cd ${repo_name}
     echo -e "${GREEN}${repo_name}:${NC} git checkout ${RC_BRANCH_NAME}"
     git checkout "${RC_BRANCH_NAME}"
