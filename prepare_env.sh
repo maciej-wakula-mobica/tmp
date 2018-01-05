@@ -72,13 +72,16 @@ do
     fi
 done
 
-echo -e "${GREEN}Changing the branch to ${RED}${RC_BRANCH_NAME}.${NC}"
+echo -e "${GREEN}Changing the branch to ${RC_BRANCH_NAME}.${NC}"
 # change branch
 for repo_name in ${ALL_REPOS_NAMES};
 do
     case "${repo_name}" in
-        wpw-sdk-iot-core)
+        ${REPO_IOT_NAME})
             # ignore changing branch to develop for wpw-sdk-iot-core
+            continue
+            ;;
+        ${REPO_THRIFT_NAME})
             continue
             ;;
         *)
