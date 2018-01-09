@@ -55,7 +55,7 @@ do
         echo -e "${RED}error, failed to init/update submodule for ${repo_name}${NC}"
         cd ..
         cleanup
-        exit 3
+        exit 1
     fi
     
     echo -e "${GREEN}${repo_name}:${NC} git submodule update --remote"
@@ -66,7 +66,7 @@ do
         echo -e "${RED}error, failed to update submodule for ${repo_name}${NC}"
         cd ..
         cleanup
-        exit 3
+        exit 2
     fi
     cd ..
 done
@@ -78,10 +78,10 @@ do
     cd ${repo_name}
     file_to_add=""
     case "${repo_name}" in
-        wpw-sdk-python )
+        ${REPO_PYTHON_NAME} )
             file_to_add="wpwithinpy/iot-core-component"
             ;;
-        wpw-sdk-nodejs )
+        ${REPO_NODEJS_NAME} )
             file_to_add="library/iot-core-component"
             ;;
         *)
@@ -108,8 +108,10 @@ do
         echo -e "${RED}error, failed to: git commit in ${repo_name}${NC}"
         cd ..
         cleanup
-        exit 3
+        exit 4
     fi
 
     cd ..
 done
+
+exit 0
