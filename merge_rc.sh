@@ -16,7 +16,19 @@ typeset -r REPO_GO_NAME="wpw-sdk-go"
 #typeset ALL_REPOS_NAMES="${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME} ${REPO_IOT_NAME} ${REPO_THRIFT_NAME} ${REPO_GO_NAME}"
 
 typeset RC_BRANCH_NAME=""
-typeset VERSION=
+typeset RC_MASTER_BRANCH_NAME=""
+
+
+# git checkout test_branch
+# git pull 
+# git checkout master
+# git pull
+# git merge --no-ff --no-commit test_branch
+## check for confilcts 
+# git commit -m 'merge test_branch branch'
+# git push
+
+
 
 function cleanup {
     echo -e "${RED}cleanup${NC}"
@@ -32,8 +44,8 @@ function cleanup {
 
 while true; do
   case "$1" in
-    -v | --version ) VERSION="$2"; shift; shift ;;
     -b | --branch ) RC_BRANCH_NAME="$2"; shift; shift ;;
+    -m | --master_branch ) RC_MASTER_BRANCH_NAME="$2"; shift; shift ;;
     -r | --repos_names )
         IN_REPOS_NAMES=(${2//,/ })
         # IFS=','
@@ -48,12 +60,18 @@ while true; do
         GREEN="";
         NC="";
         shift ;;
+    #-r | --repos )
     * ) break ;;
   esac
 done
 
-if [[ -z ${VERSION} ]]; then
-    echo -e "${RED}error, version name not defined${NC}"
+if [[ -z ${RC_BRANCH_NAME} ]]; then
+    echo -e "${RED}error, branch name not defined${NC}"
+    exit 1
+fi
+
+if [[ -z ${RC_MASTER_BRANCH_NAME} ]]; then
+    echo -e "${RED}error, master branch name not defined${NC}"
     exit 1
 fi
 
@@ -77,10 +95,14 @@ do
         exit 2
     fi
 
-    #git tag -a v0.12-alpha -m "Version 0.12-alpha"
+    # 1. git checkout test_branch (should be already done)
+    # 2. git pull (it's not required, just cloned)
+    # 3. git checkout master
+    # 4. git pull
+    # 5. git merge --no-ff --no-commit test_branch
 
-    echo -e "${GREEN}${repo_name}:${NC} git tag -a ${VERSION} -m \"Version ${VERSION}\""
-    git tag -a ${VERSION} -m "Version ${VERSION}"
+    echo -e "${GREEN}${repo_name}:${NC} git checkout ${RC_MASTER_BRANCH_NAME}"
+    git checkout "${RC_MASTER_BRANCH_NAME}"
     RC=$?
     if [[ ${RC} != 0 ]]
     then
@@ -90,12 +112,24 @@ do
         exit 3
     fi
 
-    echo -e "${GREEN}${repo_name}:${NC} git push --tags"
-    #git push --tags
+
+    echo -e "${GREEN}${repo_name}:${NC} git pull"
+    git pull
     RC=$?
     if [[ ${RC} != 0 ]]
     then
-        echo -e "${RED}error, failed to: git commit in ${repo_name}${NC}"
+        echo -e "${RED}error, failed to: git pull${NC}"
+        cd ..
+        cleanup
+        exit 4
+    fi
+
+    echo -e "${GREEN}${repo_name}:${NC} git merge --no-ff --no-commit ${RC_BRANCH_NAME}"
+    git merge --no-ff --no-commit "${RC_BRANCH_NAME}"
+    RC=$?
+    if [[ ${RC} != 0 ]]
+    then
+        echo -e "${RED}error, failed to merge ${RC_BRANCH_NAME} to ${RC_MASTER_BRANCH_NAME}${NC}"
         cd ..
         cleanup
         exit 4

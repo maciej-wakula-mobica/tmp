@@ -12,7 +12,7 @@ typeset -r REPO_PYTHON_NAME="wpw-sdk-python"
 typeset -r REPO_JAVA_NAME="wpw-sdk-java"
 # typeset -r REPO_IOT_NAME="wpw-sdk-iot-core"
 # typeset -r REPO_THRIFT_NAME="wpw-sdk-thrift"
-typeset ALL_REPOS_NAMES="${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME}"
+#typeset ALL_REPOS_NAMES="${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME}"
 
 typeset RC_BRANCH_NAME=""
 typeset VERBOSE=false
@@ -32,19 +32,34 @@ function cleanup {
 while true; do
   case "$1" in
     -v | --verbose ) VERBOSE=true; shift ;;
-    -b | --branch ) RC_BRANCH_NAME="$2"; shift ;;
+    -b | --branch ) RC_BRANCH_NAME="$2"; shift; shift ;;
+    -r | --repos_names )
+        IN_REPOS_NAMES=(${2//,/ })
+        # IFS=','
+        # read -ra IN_REPOS_NAMES <<< "$2"
+        # #IN_REPOS_NAMES=($2)
+        # unset IFS
+        shift
+        shift
+        ;;
     -n | --no-color )
         RED="";
         GREEN="";
         NC="";
         shift ;;
-    #-r | --repos )
     * ) break ;;
   esac
 done
 
+
+if [[ ${#IN_REPOS_NAMES[@]} -ne 0 ]]; then
+    ALL_REPOS_NAMES=("${IN_REPOS_NAMES[@]}")
+else
+    ALL_REPOS_NAMES=( ${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME} )
+fi
+
 # update submodules in wrapper repos
-for repo_name in ${ALL_REPOS_NAMES};
+for repo_name in ${ALL_REPOS_NAMES[@]};
 do
     cd ${repo_name}
     echo -e "${GREEN}${repo_name}:${NC} git submodule update --init --recursive"
@@ -73,7 +88,7 @@ done
 
 echo -e "${GREEN}Add files and commit.${NC}"
 # commit repos
-for repo_name in ${ALL_REPOS_NAMES};
+for repo_name in ${ALL_REPOS_NAMES[@]};
 do
     cd ${repo_name}
     file_to_add=""
@@ -84,11 +99,17 @@ do
         ${REPO_NODEJS_NAME} )
             file_to_add="library/iot-core-component"
             ;;
+        test_csharp_repo )
+            file_to_add="common"
+            ;;
+        test_python_repo )
+            file_to_add="common"
+            ;;
         *)
             file_to_add="iot-core-component"
             ;;
     esac
-    
+
     echo -e "${GREEN}${repo_name}:${NC} git add ${file_to_add}"
     git add ${file_to_add}
     RC=$?
@@ -100,7 +121,14 @@ do
         exit 3
     fi
 
-    echo -e "${GREEN}${repo_name}:${NC} git commit -m update ${file_to_add} in ${repo_name}"
+    # check if there are any changes to commit
+    if [[ -z "$(git status --porcelain)" ]]; then
+        # there are no changes
+        echo -e "${GREEN}${repo_name}${NC}: warning, no changes to to commit, continue"
+        continue
+    fi
+
+    echo -e "${GREEN}${repo_name}:${NC} git commit -m \"update ${file_to_add} in ${repo_name}\""
     git commit -m "update ${file_to_add}"
     RC=$?
     if [[ ${RC} != 0 ]]

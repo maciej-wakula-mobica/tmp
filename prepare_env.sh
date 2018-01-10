@@ -12,7 +12,7 @@ typeset -r REPO_PYTHON="https://github.com/WPTechInnovation/wpw-sdk-python.git"
 typeset -r REPO_JAVA="https://github.com/WPTechInnovation/wpw-sdk-java.git"
 typeset -r REPO_IOT="https://github.com/WPTechInnovation/wpw-sdk-iot-core.git"
 typeset -r REPO_THRIFT="https://github.com/WPTechInnovation/wpw-sdk-thrift.git"
-typeset ALL_REPOS="${REPO_GOLANG} ${REPO_DOTNET} ${REPO_NODEJS} ${REPO_PYTHON} ${REPO_JAVA} ${REPO_IOT} ${REPO_THRIFT}"
+#typeset ALL_REPOS=( ${REPO_GOLANG} ${REPO_DOTNET} ${REPO_NODEJS} ${REPO_PYTHON} ${REPO_JAVA} ${REPO_IOT} ${REPO_THRIFT} )
 
 typeset -r REPO_GOLANG_NAME="wpw-sdk-go"
 typeset -r REPO_DOTNET_NAME="wpw-sdk-dotnet"
@@ -21,7 +21,7 @@ typeset -r REPO_PYTHON_NAME="wpw-sdk-python"
 typeset -r REPO_JAVA_NAME="wpw-sdk-java"
 typeset -r REPO_IOT_NAME="wpw-sdk-iot-core"
 typeset -r REPO_THRIFT_NAME="wpw-sdk-thrift"
-typeset ALL_REPOS_NAMES="${REPO_GOLANG_NAME} ${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME} ${REPO_IOT_NAME} ${REPO_THRIFT_NAME}"
+#typeset ALL_REPOS_NAMES=( ${REPO_GOLANG_NAME} ${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME} ${REPO_IOT_NAME} ${REPO_THRIFT_NAME} )
 
 typeset RC_BRANCH_NAME=""
 typeset VERBOSE=false
@@ -40,14 +40,37 @@ function cleanup {
 while true; do
   case "$1" in
     -v | --verbose ) VERBOSE=true; shift ;;
-    -b | --branch ) RC_BRANCH_NAME="$2"; shift ;;
+    -b | --branch ) RC_BRANCH_NAME="$2";
+        shift
+        shift
+        ;;
+    -r | --repos_names )
+        IN_REPOS_NAMES=(${2//,/ })
+        # IFS=','
+        # read -ra IN_REPOS_NAMES <<< "$2"
+        # #IN_REPOS_NAMES=($2)
+        # unset IFS
+        shift
+        shift
+        ;;
+    -e | --repos )
+        IFS=','
+        IN_REPOS=($2)
+        unset IFS
+        shift
+        shift
+        ;;
     -n | --no-color )
         RED="";
         GREEN="";
         NC="";
-        shift ;;
-    #-r | --repos )
-    * ) break ;;
+        shift
+        ;;
+    * )
+        # echo -e "${RED}warning, unexpected input parameter {$1}${NC}"
+        # exit 1
+        break
+        ;;
   esac
 done
 
@@ -56,10 +79,35 @@ if [[ -z ${RC_BRANCH_NAME} ]]; then
     exit 1
 fi
 
+# check if 
+if [[ ${#IN_REPOS_NAMES[@]} -ne 0 ]]; then
+    ALL_REPOS_NAMES=("${IN_REPOS_NAMES[@]}")
+else
+    ALL_REPOS_NAMES=( ${REPO_GOLANG_NAME} ${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME} ${REPO_IOT_NAME} ${REPO_THRIFT_NAME} )
+fi
+
+if [[ ${#IN_REPOS[@]} -ne 0 ]]; then
+    ALL_REPOS=("${IN_REPOS[@]}")
+else
+    ALL_REPOS=( ${REPO_GOLANG} ${REPO_DOTNET} ${REPO_NODEJS} ${REPO_PYTHON} ${REPO_JAVA} ${REPO_IOT} ${REPO_THRIFT} )
+fi
+
+# for xxx in ${ALL_REPOS[@]};
+# do
+#     echo ${xxx}
+# done
+
+# #for xxx in ${IN_REPOS_NAMES[@]};
+# for xxx in ${ALL_REPOS_NAMES[@]};
+# do
+#     echo $xxx
+# done
+# exit 2
+
 echo -e "${GREEN}Cloning all repos.${NC}"
 
 # clone repos
-for repo in ${ALL_REPOS};
+for repo in ${ALL_REPOS[@]};
 do
     echo -e "${GREEN}git clone ${repo}${NC}"
     git clone ${repo}
@@ -74,7 +122,7 @@ done
 
 echo -e "${GREEN}Changing the branch to ${RC_BRANCH_NAME}.${NC}"
 # change branch
-for repo_name in ${ALL_REPOS_NAMES};
+for repo_name in ${ALL_REPOS_NAMES[@]};
 do
     case "${repo_name}" in
         ${REPO_IOT_NAME})
