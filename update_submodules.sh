@@ -5,7 +5,7 @@ typeset RED='\033[0;31m'
 typeset GREEN='\033[0;32m'
 typeset NC='\033[0m'  # No Color
 
-# typeset -r REPO_GOLANG_NAME="wpw-sdk-go"
+typeset -r REPO_GOLANG_NAME="wpw-sdk-go"
 typeset -r REPO_DOTNET_NAME="wpw-sdk-dotnet"
 typeset -r REPO_NODEJS_NAME="wpw-sdk-nodejs"
 typeset -r REPO_PYTHON_NAME="wpw-sdk-python"
@@ -91,40 +91,47 @@ echo -e "${GREEN}Add files and commit.${NC}"
 for repo_name in ${ALL_REPOS_NAMES[@]};
 do
     cd ${repo_name}
-    file_to_add=""
+    files_to_add=()
     case "${repo_name}" in
         ${REPO_PYTHON_NAME} )
-            file_to_add="wpwithinpy/iot-core-component"
+            files_to_add+=("wpwithinpy/iot-core-component")
+            files_to_add+=("wpw-sdk-thrift")
             ;;
         ${REPO_NODEJS_NAME} )
-            file_to_add="library/iot-core-component"
+            files_to_add+=("library/iot-core-component")
+            files_to_add+=("wpw-sdk-thrift")
             ;;
         test_csharp_repo )
-            file_to_add="common"
+            files_to_add+=("common")
             ;;
         test_python_repo )
-            file_to_add="common"
+            files_to_add+=("common")
             ;;
         *)
-            file_to_add="iot-core-component"
+            files_to_add+=("iot-core-component")
+            files_to_add+=("wpw-sdk-thrift")
             ;;
     esac
 
-    echo -e "${GREEN}${repo_name}:${NC} git add ${file_to_add}"
-    git add ${file_to_add}
-    RC=$?
-    if [[ ${RC} != 0 ]]
-    then
-        echo -e "${RED}error, failed to: git add ${repo_name}${NC}"
-        cd ..
-        cleanup
-        exit 3
-    fi
+    for file in ${files_to_add[@]};
+    do
+        echo -e "${GREEN}${repo_name}:${NC} git add ${file}"
+        git add ${file}
+        RC=$?
+        if [[ ${RC} != 0 ]]
+        then
+            echo -e "${RED}error, failed to: git add ${repo_name}${NC}"
+            cd ..
+            cleanup
+            exit 3
+        fi
+    done
 
     # check if there are any changes to commit
     if [[ -z "$(git status --porcelain)" ]]; then
         # there are no changes
         echo -e "${GREEN}${repo_name}${NC}: warning, no changes to to commit, continue"
+        cd ..
         continue
     fi
 
