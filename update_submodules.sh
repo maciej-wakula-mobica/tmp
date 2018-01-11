@@ -15,7 +15,6 @@ typeset -r REPO_JAVA_NAME="wpw-sdk-java"
 #typeset ALL_REPOS_NAMES="${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME}"
 
 typeset RC_BRANCH_NAME=""
-typeset VERBOSE=false
 
 function cleanup {
     echo -e "${RED}cleanup${NC}"
@@ -31,7 +30,6 @@ function cleanup {
 
 while true; do
   case "$1" in
-    -v | --verbose ) VERBOSE=true; shift ;;
     -b | --branch ) RC_BRANCH_NAME="$2"; shift; shift ;;
     -r | --repos_names )
         IN_REPOS_NAMES=(${2//,/ })
@@ -51,6 +49,8 @@ while true; do
   esac
 done
 
+# vfy if branch name is correct
+
 
 if [[ ${#IN_REPOS_NAMES[@]} -ne 0 ]]; then
     ALL_REPOS_NAMES=("${IN_REPOS_NAMES[@]}")
@@ -62,6 +62,16 @@ fi
 for repo_name in ${ALL_REPOS_NAMES[@]};
 do
     cd ${repo_name}
+
+    # vfy if branch name is correct
+    CURRENT_BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+    if [[ ${CURRENT_BRANCH_NAME} != "${RC_BRANCH_NAME}" ]]; then
+        echo -e "${RED}error, current branch name ${CURRENT_BRANCH_NAME} is different than ${RC_BRANCH_NAME} for ${repo_name}${NC}"
+        cd ..
+        cleanup
+        exit 1
+    fi
+
     echo -e "${GREEN}${repo_name}:${NC} git submodule update --init --recursive"
     git submodule update --init --recursive
     RC=$?
@@ -70,7 +80,7 @@ do
         echo -e "${RED}error, failed to init/update submodule for ${repo_name}${NC}"
         cd ..
         cleanup
-        exit 1
+        exit 2
     fi
     
     echo -e "${GREEN}${repo_name}:${NC} git submodule update --remote"
@@ -81,7 +91,7 @@ do
         echo -e "${RED}error, failed to update submodule for ${repo_name}${NC}"
         cd ..
         cleanup
-        exit 2
+        exit 3
     fi
     cd ..
 done
@@ -123,7 +133,7 @@ do
             echo -e "${RED}error, failed to: git add ${repo_name}${NC}"
             cd ..
             cleanup
-            exit 3
+            exit 4
         fi
     done
 
@@ -135,15 +145,15 @@ do
         continue
     fi
 
-    echo -e "${GREEN}${repo_name}:${NC} git commit -m \"update ${file_to_add} in ${repo_name}\""
-    git commit -m "update ${file_to_add}"
+    echo -e "${GREEN}${repo_name}:${NC} git commit -m update ${file} in ${repo_name}"
+    git commit -m "update_submodules: update files"
     RC=$?
     if [[ ${RC} != 0 ]]
     then
         echo -e "${RED}error, failed to: git commit in ${repo_name}${NC}"
         cd ..
         cleanup
-        exit 4
+        exit 5
     fi
 
     cd ..

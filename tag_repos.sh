@@ -15,7 +15,6 @@ typeset -r REPO_THRIFT_NAME="wpw-sdk-thrift"
 typeset -r REPO_GO_NAME="wpw-sdk-go"
 #typeset ALL_REPOS_NAMES="${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME} ${REPO_IOT_NAME} ${REPO_THRIFT_NAME} ${REPO_GO_NAME}"
 
-typeset RC_BRANCH_NAME=""
 typeset VERSION=
 
 function cleanup {
@@ -33,7 +32,6 @@ function cleanup {
 while true; do
   case "$1" in
     -v | --version ) VERSION="$2"; shift; shift ;;
-    -b | --branch ) RC_BRANCH_NAME="$2"; shift; shift ;;
     -r | --repos_names )
         IN_REPOS_NAMES=(${2//,/ })
         # IFS=','

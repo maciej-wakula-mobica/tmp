@@ -24,7 +24,6 @@ typeset -r REPO_THRIFT_NAME="wpw-sdk-thrift"
 #typeset ALL_REPOS_NAMES=( ${REPO_GOLANG_NAME} ${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME} ${REPO_IOT_NAME} ${REPO_THRIFT_NAME} )
 
 typeset RC_BRANCH_NAME=""
-typeset VERBOSE=false
 
 function cleanup {
     for repo_name in ${ALL_REPOS_NAMES};
@@ -39,7 +38,6 @@ function cleanup {
 
 while true; do
   case "$1" in
-    -v | --verbose ) VERBOSE=true; shift ;;
     -b | --branch ) RC_BRANCH_NAME="$2";
         shift
         shift
