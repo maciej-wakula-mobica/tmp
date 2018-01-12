@@ -27,6 +27,9 @@ typeset MASTER_BRANCH_NAME="master"
 typeset VERSION=""
 typeset IN_REPOS_NAMES=()
 typeset IN_REPOS=()
+typeset PUSH=false
+typeset PUSH_ONLY=false
+typeset CLEAN=false
 
 function cleanup {
     echo -e "${RED}cleanup${NC}"
@@ -50,6 +53,9 @@ while true; do
     -v | --version ) VERSION="$2"; shift; shift ;;
     -b | --branch ) RC_BRANCH_NAME="$2"; shift; shift ;;
     -m | --master_branch ) MASTER_BRANCH_NAME="$2"; shift; shift ;;
+    -p | --push ) PUSH=true; shift ;;
+    -o | --push_only ) PUSH_ONLY=true; shift ;;
+    -c | --clean ) CLEAN=true; shift ;;
     -r | --repos_names )
         IN_REPOS_NAMES=(${2//,/ })
         # IFS=','
@@ -80,6 +86,11 @@ if [[ -z ${VERSION} ]]; then
     exit 1
 fi
 
+if [[ ${PUSH} == true && ${PUSH_ONLY} == true ]]; then
+    echo -e "${RED}error, both parameters: push (-p) and push_only (-o) cannot be set${NC}"
+    exit 1
+fi
+
 if [[ ${#IN_REPOS_NAMES[@]} -ne 0 ]]; then
     ALL_REPOS_NAMES=("${IN_REPOS_NAMES[@]}")
 else
@@ -96,69 +107,73 @@ fi
 
 typeset ALL_REPOS_STRING=`join_by , "${ALL_REPOS[@]}"`
 
-# prepare_clones
-echo -e "${GREEN}*** prepare_env.sh ${NC}"
-./prepare_env.sh -b ${RC_BRANCH_NAME} -r ${ALL_REPOS_NAMES_STRING} -e ${ALL_REPOS_STRING}
-RC=$?
-if [[ ${RC} != 0 ]]
-then
-    echo -e "${RED}error, failed to prepares clones${NC}"
-    cleanup
-    exit 2
+if [[ ${PUSH_ONLY} == false ]]; then
+    # prepare_clones
+    echo -e "${GREEN}*** prepare_env.sh ${NC}"
+    ./prepare_env.sh -b ${RC_BRANCH_NAME} -r ${ALL_REPOS_NAMES_STRING} -e ${ALL_REPOS_STRING}
+    RC=$?
+    if [[ ${RC} != 0 ]]
+    then
+        echo -e "${RED}error, failed to prepares clones${NC}"
+        cleanup
+        exit 2
+    fi
+
+    # build rpc agents
+    #build-all.sh
+    # RC=$?
+    # if [[ ${RC} != 0 ]]
+    # then
+    #     echo -e "${RED}error, failed to build RPC agents${NC}"
+    #     cleanup
+    #     exit 2
+    # fi
+
+    # update submodules
+    echo -e "${GREEN}*** update_submodules.sh ${NC}"
+    ./update_submodules.sh -b "${RC_BRANCH_NAME}" -r "${ALL_REPOS_NAMES_STRING}"
+    RC=$?
+    if [[ ${RC} != 0 ]]
+    then
+        echo -e "${RED}error, failed to update submodules${NC}"
+        cleanup
+        exit 2
+    fi
+
+    # merge release candidate to develop/master
+    echo -e "${GREEN}*** merge_rc.sh ${NC}"
+    ./merge_rc.sh -b "${RC_BRANCH_NAME}" -m "${MASTER_BRANCH_NAME}" -r "${ALL_REPOS_NAMES_STRING}"
+    RC=$?
+    if [[ ${RC} != 0 ]]
+    then
+        echo -e "${RED}error, failed to merge branches${NC}"
+        cleanup
+        exit 2
+    fi
+
+    # tag changes
+    echo -e "${GREEN}*** tag_repos.sh ${NC}"
+    ./tag_repos.sh -v "${VERSION}" -r "${ALL_REPOS_NAMES_STRING}"
+    RC=$?
+    if [[ ${RC} != 0 ]]
+    then
+        echo -e "${RED}error, failed to tag version${NC}"
+        cleanup
+        exit 2
+    fi
 fi
 
-# build rpc agents
-#build-all.sh
-# RC=$?
-# if [[ ${RC} != 0 ]]
-# then
-#     echo -e "${RED}error, failed to build RPC agents${NC}"
-#     cleanup
-#     exit 2
-# fi
-
-# update submodules
-echo -e "${GREEN}*** update_submodules.sh ${NC}"
-./update_submodules.sh -b "${RC_BRANCH_NAME}" -r "${ALL_REPOS_NAMES_STRING}"
-RC=$?
-if [[ ${RC} != 0 ]]
-then
-    echo -e "${RED}error, failed to update submodules${NC}"
-    cleanup
-    exit 2
-fi
-
-# merge release candidate to develop/master
-echo -e "${GREEN}*** merge_rc.sh ${NC}"
-./merge_rc.sh -b "${RC_BRANCH_NAME}" -m "${MASTER_BRANCH_NAME}" -r "${ALL_REPOS_NAMES_STRING}"
-RC=$?
-if [[ ${RC} != 0 ]]
-then
-    echo -e "${RED}error, failed to merge branches${NC}"
-    cleanup
-    exit 2
-fi
-
-# tag changes
-echo -e "${GREEN}*** tag_repos.sh ${NC}"
-./tag_repos.sh -v "${VERSION}" -r "${ALL_REPOS_NAMES_STRING}"
-RC=$?
-if [[ ${RC} != 0 ]]
-then
-    echo -e "${RED}error, failed to tag version${NC}"
-    cleanup
-    exit 2
-fi
-
-# push
-echo -e "${GREEN}*** push_repos.sh${NC}"
-./push_repos.sh -m "${MASTER_BRANCH_NAME}" -r "${ALL_REPOS_NAMES_STRING}"
-RC=$?
-if [[ ${RC} != 0 ]]
-then
-    echo -e "${RED}error, failed to push changes${NC}"
-    cleanup
-    exit 2
+if [[ ${PUSH} == true ]]; then
+    # push
+    echo -e "${GREEN}*** push_repos.sh${NC}"
+    ./push_repos.sh -m "${MASTER_BRANCH_NAME}" -r "${ALL_REPOS_NAMES_STRING}"
+    RC=$?
+    if [[ ${RC} != 0 ]]
+    then
+        echo -e "${RED}error, failed to push changes${NC}"
+        cleanup
+        exit 2
+    fi
 fi
 
 exit 0

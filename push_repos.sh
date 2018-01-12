@@ -5,15 +5,15 @@ typeset RED='\033[0;31m'
 typeset GREEN='\033[0;32m'
 typeset NC='\033[0m'  # No Color
 
-# typeset -r REPO_GOLANG_NAME="wpw-sdk-go"
+typeset -r REPO_GO_NAME="wpw-sdk-go"
 typeset -r REPO_DOTNET_NAME="wpw-sdk-dotnet"
 typeset -r REPO_NODEJS_NAME="wpw-sdk-nodejs"
 typeset -r REPO_PYTHON_NAME="wpw-sdk-python"
 typeset -r REPO_JAVA_NAME="wpw-sdk-java"
 typeset -r REPO_IOT_NAME="wpw-sdk-iot-core"
 typeset -r REPO_THRIFT_NAME="wpw-sdk-thrift"
-typeset -r REPO_GO_NAME="wpw-sdk-go"
-#typeset ALL_REPOS_NAMES="${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME} ${REPO_IOT_NAME} ${REPO_THRIFT_NAME} ${REPO_GO_NAME}"
+
+#typeset ALL_REPOS_NAMES="${REPO_GO_NAME} ${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME} ${REPO_IOT_NAME} ${REPO_THRIFT_NAME}"
 
 typeset RC_MASTER_BRANCH_NAME=""
 
