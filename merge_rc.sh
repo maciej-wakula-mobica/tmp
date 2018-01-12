@@ -84,6 +84,22 @@ echo -e "${GREEN}Tag repos with name: ${VERSION}.${NC}"
 # commit repos
 for repo_name in ${ALL_REPOS_NAMES[@]};
 do
+    case "${repo_name}" in
+        ${REPO_GO_NAME} )
+            ;;
+        ${REPO_DOTNET_NAME} )
+            ;;
+        ${REPO_NODEJS_NAME} )
+            ;;
+        ${REPO_PYTHON_NAME} )
+            ;;
+        ${REPO_JAVA_NAME} )
+            ;;
+        * )
+            continue
+            ;;
+    esac
+
     cd ${repo_name}
     RC=$?
     if [[ ${RC} != 0 ]]
@@ -110,7 +126,6 @@ do
         cleanup
         exit 3
     fi
-
 
     echo -e "${GREEN}${repo_name}:${NC} git pull"
     git pull

@@ -17,15 +17,15 @@ typeset -r REPO_JAVA_NAME="wpw-sdk-java"
 typeset RC_BRANCH_NAME=""
 
 function cleanup {
-    echo -e "${RED}cleanup${NC}"
-    for repo_name in ${ALL_REPOS_NAMES};
-    do        
-        if [ -d "${repo_name}" ]; then
-            echo -e "${RED} Removing directory ${repo_name}${NC}"
-            # Control will enter here if $DIRECTORY exists.
-            rm -fr "${repo_name}"
-        fi
-    done
+    echo -e "cleanup"
+    # for repo_name in ${ALL_REPOS_NAMES};
+    # do        
+    #     if [ -d "${repo_name}" ]; then
+    #         echo -e "${RED} Removing directory ${repo_name}${NC}"
+    #         # Control will enter here if $DIRECTORY exists.
+    #         rm -fr "${repo_name}"
+    #     fi
+    # done
 }
 
 while true; do
@@ -61,6 +61,22 @@ fi
 # update submodules in wrapper repos
 for repo_name in ${ALL_REPOS_NAMES[@]};
 do
+    case "${repo_name}" in
+        ${REPO_GOLANG_NAME} )
+            ;;
+        ${REPO_DOTNET_NAME} )
+            ;;
+        ${REPO_NODEJS_NAME} )
+            ;;
+        ${REPO_PYTHON_NAME} )
+            ;;
+        ${REPO_JAVA_NAME} )
+            ;;
+        * )
+            continue
+            ;;
+    esac
+
     cd ${repo_name}
 
     # vfy if branch name is correct
@@ -100,6 +116,24 @@ echo -e "${GREEN}Add files and commit.${NC}"
 # commit repos
 for repo_name in ${ALL_REPOS_NAMES[@]};
 do
+    case "${repo_name}" in
+        ${REPO_GOLANG_NAME} )
+            continue
+            ;;
+        ${REPO_DOTNET_NAME} )
+            ;;
+        ${REPO_NODEJS_NAME} )
+            ;;
+        ${REPO_PYTHON_NAME} )
+            ;;
+        ${REPO_JAVA_NAME} )
+            ;;
+        * )
+            continue
+            ;;
+    esac
+
+
     cd ${repo_name}
     files_to_add=()
     case "${repo_name}" in

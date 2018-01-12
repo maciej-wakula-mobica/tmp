@@ -5,13 +5,21 @@ typeset RED='\033[0;31m'
 typeset GREEN='\033[0;32m'
 typeset NC='\033[0m'  # No Color
 
-typeset -r REPO_GO="https://github.com/WPTechInnovation/wpw-sdk-go.git"
-typeset -r REPO_DOTNET="https://github.com/WPTechInnovation/wpw-sdk-dotnet.git"
-typeset -r REPO_NODEJS="https://github.com/WPTechInnovation/wpw-sdk-nodejs.git"
-typeset -r REPO_PYTHON="https://github.com/WPTechInnovation/wpw-sdk-python.git"
-typeset -r REPO_JAVA="https://github.com/WPTechInnovation/wpw-sdk-java.git"
-typeset -r REPO_IOT="https://github.com/WPTechInnovation/wpw-sdk-iot-core.git"
-typeset -r REPO_THRIFT="https://github.com/WPTechInnovation/wpw-sdk-thrift.git"
+# typeset -r REPO_GO="https://github.com/WPTechInnovation/wpw-sdk-go.git"
+# typeset -r REPO_DOTNET="https://github.com/WPTechInnovation/wpw-sdk-dotnet.git"
+# typeset -r REPO_NODEJS="https://github.com/WPTechInnovation/wpw-sdk-nodejs.git"
+# typeset -r REPO_PYTHON="https://github.com/WPTechInnovation/wpw-sdk-python.git"
+# typeset -r REPO_JAVA="https://github.com/WPTechInnovation/wpw-sdk-java.git"
+# typeset -r REPO_IOT="https://github.com/WPTechInnovation/wpw-sdk-iot-core.git"
+# typeset -r REPO_THRIFT="https://github.com/WPTechInnovation/wpw-sdk-thrift.git"
+
+typeset -r REPO_GO="file:///c/Users/wabe/clones/release_script/copy_of_repos/wpw-sdk-go.git"
+typeset -r REPO_DOTNET="file:///c/Users/wabe/clones/release_script/copy_of_repos/wpw-sdk-dotnet.git"
+typeset -r REPO_NODEJS="file:///c/Users/wabe/clones/release_script/copy_of_repos/wpw-sdk-nodejs.git"
+typeset -r REPO_PYTHON="file:///c/Users/wabe/clones/release_script/copy_of_repos/wpw-sdk-python.git"
+typeset -r REPO_JAVA="file:///c/Users/wabe/clones/release_script/copy_of_repos/wpw-sdk-java.git"
+typeset -r REPO_IOT="file:///c/Users/wabe/clones/release_script/copy_of_repos/wpw-sdk-iot-core.git"
+typeset -r REPO_THRIFT="file:///c/Users/wabe/clones/release_script/copy_of_repos/wpw-sdk-thrift.git"
 
 typeset -r REPO_GO_NAME="wpw-sdk-go"
 typeset -r REPO_DOTNET_NAME="wpw-sdk-dotnet"
@@ -32,14 +40,17 @@ typeset PUSH_ONLY=false
 typeset CLEAN=false
 
 function cleanup {
-    for repo_name in ${ALL_REPOS_NAMES[@]};
-    do
-        if [ -d "${repo_name}" ]; then
-            echo -e "${GREEN} cleanup: Removing directory ${repo_name}${NC}"
-            # Control will enter here if $DIRECTORY exists.
-            rm -fr "${repo_name}"
-        fi
-    done
+    if [[ ${CLEAN} == true ]]; then
+        echo -e "${GREEN}*** Remove directories. ***${NC}"
+        for repo_name in ${ALL_REPOS_NAMES[@]};
+        do
+            if [ -d "${repo_name}" ]; then
+                echo -e "${GREEN} cleanup: Removing directory ${repo_name}${NC}"
+                # Control will enter here if $DIRECTORY exists.
+                rm -fr "${repo_name}"
+            fi
+        done
+    fi
 }
 
 function join_by {
@@ -121,13 +132,22 @@ if [[ ${PUSH_ONLY} == false ]]; then
     fi
 
     # build rpc agents
-    #build-all.sh
-    # RC=$?
-    # if [[ ${RC} != 0 ]]
-    # then
-    #     echo -e "${RED}error, failed to build RPC agents${NC}"
-    #     cleanup
-    #     exit 2
+    # if [[ -d ${REPO_GO_NAME}/applications/rpc-agent ]]; then
+    #     cd ${REPO_GO_NAME}/applications/rpc-agent
+    #     #git checkout develop
+    #     ./build-all.sh -v ${VERSION}
+    #     RC=$?
+    #     if [[ ${RC} != 0 ]]
+    #     then
+    #         echo -e "${RED}error, failed to build RPC agents${NC}"
+    #         cd ../../..
+    #         cleanup
+    #         exit 2
+    #     fi
+    #     cd ../../..
+    #     # copy rpc agents to iot directory
+    #     cp ${REPO_GO_NAME}/applications/rpc-agent/build/rpc* ${REPO_IOT_NAME}/bin/
+    #     touch ${REPO_IOT_NAME}/bin/test
     # fi
 
     # update submodules
@@ -185,12 +205,6 @@ if [[ ${PUSH} == true || ${PUSH_ONLY} == true ]]; then
     fi
 fi
 
-
-if [[ ${CLEAN} == true ]]; then
-    echo
-    echo -e "${GREEN}*** Remove directories. ***${NC}"
-    echo
-    cleanup
-fi
+cleanup
 
 exit 0

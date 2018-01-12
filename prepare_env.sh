@@ -26,14 +26,15 @@ typeset ALL_REPOS_NAMES=()
 typeset RC_BRANCH_NAME=""
 
 function cleanup {
-    for repo_name in ${ALL_REPOS_NAMES[@]};
-    do        
-        if [ -d "${repo_name}" ]; then
-            echo -e "${RED} Removing directory ${repo_name}${NC}"
-            # Control will enter here if $DIRECTORY exists.
-            rm -fr "${repo_name}"
-        fi
-    done
+    echo
+    # for repo_name in ${ALL_REPOS_NAMES[@]};
+    # do        
+    #     if [ -d "${repo_name}" ]; then
+    #         echo -e "${RED} Removing directory ${repo_name}${NC}"
+    #         # Control will enter here if $DIRECTORY exists.
+    #         rm -fr "${repo_name}"
+    #     fi
+    # done
 }
 
 while true; do
@@ -89,18 +90,6 @@ if [[ ${#IN_REPOS[@]} -ne 0 ]]; then
 else
     ALL_REPOS=( ${REPO_GOLANG} ${REPO_DOTNET} ${REPO_NODEJS} ${REPO_PYTHON} ${REPO_JAVA} ${REPO_IOT} ${REPO_THRIFT} )
 fi
-
-# for xxx in ${ALL_REPOS[@]};
-# do
-#     echo ${xxx}
-# done
-
-# #for xxx in ${IN_REPOS_NAMES[@]};
-# for xxx in ${ALL_REPOS_NAMES[@]};
-# do
-#     echo $xxx
-# done
-# exit 2
 
 echo -e "${GREEN}Cloning all repos.${NC}"
 
