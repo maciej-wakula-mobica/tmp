@@ -32,15 +32,14 @@ typeset PUSH_ONLY=false
 typeset CLEAN=false
 
 function cleanup {
-    echo -e "${RED}cleanup${NC}"
-    # for repo_name in ${ALL_REPOS_NAMES};
-    # do
-    #     if [ -d "${repo_name}" ]; then
-    #         echo -e "${RED} Removing directory ${repo_name}${NC}"
-    #         # Control will enter here if $DIRECTORY exists.
-    #         #rm -fr "${repo_name}"
-    #     fi
-    # done
+    for repo_name in ${ALL_REPOS_NAMES[@]};
+    do
+        if [ -d "${repo_name}" ]; then
+            echo -e "${GREEN} cleanup: Removing directory ${repo_name}${NC}"
+            # Control will enter here if $DIRECTORY exists.
+            rm -fr "${repo_name}"
+        fi
+    done
 }
 
 function join_by {
@@ -109,7 +108,9 @@ typeset ALL_REPOS_STRING=`join_by , "${ALL_REPOS[@]}"`
 
 if [[ ${PUSH_ONLY} == false ]]; then
     # prepare_clones
-    echo -e "${GREEN}*** prepare_env.sh ${NC}"
+    echo
+    echo -e "${GREEN}*** Prepare clones (prepare_env.sh). ***${NC}"
+    echo
     ./prepare_env.sh -b ${RC_BRANCH_NAME} -r ${ALL_REPOS_NAMES_STRING} -e ${ALL_REPOS_STRING}
     RC=$?
     if [[ ${RC} != 0 ]]
@@ -130,7 +131,9 @@ if [[ ${PUSH_ONLY} == false ]]; then
     # fi
 
     # update submodules
-    echo -e "${GREEN}*** update_submodules.sh ${NC}"
+    echo
+    echo -e "${GREEN}*** Update submodules (update_submodules.sh). ***${NC}"
+    echo
     ./update_submodules.sh -b "${RC_BRANCH_NAME}" -r "${ALL_REPOS_NAMES_STRING}"
     RC=$?
     if [[ ${RC} != 0 ]]
@@ -141,7 +144,9 @@ if [[ ${PUSH_ONLY} == false ]]; then
     fi
 
     # merge release candidate to develop/master
-    echo -e "${GREEN}*** merge_rc.sh ${NC}"
+    echo
+    echo -e "${GREEN}*** Merge release condidate (merge_rc.sh). ***${NC}"
+    echo
     ./merge_rc.sh -b "${RC_BRANCH_NAME}" -m "${MASTER_BRANCH_NAME}" -r "${ALL_REPOS_NAMES_STRING}"
     RC=$?
     if [[ ${RC} != 0 ]]
@@ -152,7 +157,9 @@ if [[ ${PUSH_ONLY} == false ]]; then
     fi
 
     # tag changes
-    echo -e "${GREEN}*** tag_repos.sh ${NC}"
+    echo
+    echo -e "${GREEN}*** Tag repositories (tag_repos.sh). ***${NC}"
+    echo
     ./tag_repos.sh -v "${VERSION}" -r "${ALL_REPOS_NAMES_STRING}"
     RC=$?
     if [[ ${RC} != 0 ]]
@@ -163,9 +170,11 @@ if [[ ${PUSH_ONLY} == false ]]; then
     fi
 fi
 
-if [[ ${PUSH} == true ]]; then
+if [[ ${PUSH} == true || ${PUSH_ONLY} == true ]]; then
     # push
-    echo -e "${GREEN}*** push_repos.sh${NC}"
+    echo
+    echo -e "${GREEN}*** Push repositories (push_repos.sh). ***${NC}"
+    echo
     ./push_repos.sh -m "${MASTER_BRANCH_NAME}" -r "${ALL_REPOS_NAMES_STRING}"
     RC=$?
     if [[ ${RC} != 0 ]]
@@ -174,6 +183,14 @@ if [[ ${PUSH} == true ]]; then
         cleanup
         exit 2
     fi
+fi
+
+
+if [[ ${CLEAN} == true ]]; then
+    echo
+    echo -e "${GREEN}*** Remove directories. ***${NC}"
+    echo
+    cleanup
 fi
 
 exit 0

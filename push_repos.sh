@@ -85,7 +85,7 @@ do
     fi
 
     echo -e "${GREEN}${repo_name}:${NC} git push origin ${RC_MASTER_BRANCH_NAME}"
-    #git push origin ${RC_MASTER_BRANCH_NAME}
+    git push origin ${RC_MASTER_BRANCH_NAME}
     RC=$?
     if [[ ${RC} != 0 ]]
     then
@@ -96,7 +96,7 @@ do
     fi
 
     echo -e "${GREEN}${repo_name}:${NC} git push --tags"
-    #git push --tags
+    git push --tags
     RC=$?
     if [[ ${RC} != 0 ]]
     then

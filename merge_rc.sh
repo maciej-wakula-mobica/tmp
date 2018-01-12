@@ -123,8 +123,10 @@ do
         exit 4
     fi
 
-    echo -e "${GREEN}${repo_name}:${NC} git merge --no-ff --no-commit ${RC_BRANCH_NAME}"
-    git merge --no-ff --no-commit "${RC_BRANCH_NAME}"
+    # echo -e "${GREEN}${repo_name}:${NC} git merge --no-ff --no-commit ${RC_BRANCH_NAME}"
+    # git merge --no-ff --no-commit "${RC_BRANCH_NAME}"
+    echo -e "${GREEN}${repo_name}:${NC} git merge --no-ff --no-edit ${RC_BRANCH_NAME}"
+    git merge --no-ff --no-edit "${RC_BRANCH_NAME}"
     RC=$?
     if [[ ${RC} != 0 ]]
     then

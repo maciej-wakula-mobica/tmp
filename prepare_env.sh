@@ -21,12 +21,12 @@ typeset -r REPO_PYTHON_NAME="wpw-sdk-python"
 typeset -r REPO_JAVA_NAME="wpw-sdk-java"
 typeset -r REPO_IOT_NAME="wpw-sdk-iot-core"
 typeset -r REPO_THRIFT_NAME="wpw-sdk-thrift"
-#typeset ALL_REPOS_NAMES=( ${REPO_GOLANG_NAME} ${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME} ${REPO_IOT_NAME} ${REPO_THRIFT_NAME} )
+typeset ALL_REPOS_NAMES=()
 
 typeset RC_BRANCH_NAME=""
 
 function cleanup {
-    for repo_name in ${ALL_REPOS_NAMES};
+    for repo_name in ${ALL_REPOS_NAMES[@]};
     do        
         if [ -d "${repo_name}" ]; then
             echo -e "${RED} Removing directory ${repo_name}${NC}"
