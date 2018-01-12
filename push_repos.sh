@@ -15,7 +15,7 @@ typeset -r REPO_THRIFT_NAME="wpw-sdk-thrift"
 typeset -r REPO_GO_NAME="wpw-sdk-go"
 #typeset ALL_REPOS_NAMES="${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME} ${REPO_IOT_NAME} ${REPO_THRIFT_NAME} ${REPO_GO_NAME}"
 
-typeset VERSION=
+typeset RC_MASTER_BRANCH_NAME=""
 
 function cleanup {
     echo -e "${RED}cleanup${NC}"
@@ -31,7 +31,7 @@ function cleanup {
 
 while true; do
   case "$1" in
-    -v | --version ) VERSION="$2"; shift; shift ;;
+    -m | --master_branch ) RC_MASTER_BRANCH_NAME="$2"; shift; shift ;;
     -r | --repos_names )
         IN_REPOS_NAMES=(${2//,/ })
         # IFS=','
@@ -50,18 +50,18 @@ while true; do
   esac
 done
 
-if [[ -z ${VERSION} ]]; then
-    echo -e "${RED}error, version name not defined${NC}"
+if [[ -z ${RC_MASTER_BRANCH_NAME} ]]; then
+    echo -e "${RED}error, master branch name not defined${NC}"
     exit 1
 fi
 
 if [[ ${#IN_REPOS_NAMES[@]} -ne 0 ]]; then
     ALL_REPOS_NAMES=("${IN_REPOS_NAMES[@]}")
 else
-    ALL_REPOS_NAMES=( ${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME} ${REPO_IOT_NAME} ${REPO_THRIFT_NAME} ${REPO_GO_NAME} )
+    ALL_REPOS_NAMES=( ${REPO_GO_NAME} ${REPO_DOTNET_NAME} ${REPO_NODEJS_NAME} ${REPO_PYTHON_NAME} ${REPO_JAVA_NAME} ${REPO_IOT_NAME} ${REPO_THRIFT_NAME} )
 fi
 
-echo -e "${GREEN}Tag repos with name: ${VERSION}.${NC}"
+echo -e "${GREEN}Push repos.${NC}"
 # commit repos
 for repo_name in ${ALL_REPOS_NAMES[@]};
 do
@@ -75,29 +75,36 @@ do
         exit 2
     fi
 
-    # git tag -a v0.12-alpha -m "Version 0.12-alpha"
-    echo -e "${GREEN}${repo_name}:${NC} git tag -a ${VERSION} -m \"Version ${VERSION}\""
-    git tag -a ${VERSION} -m "Version ${VERSION}"
+    # vfy if branch name is correct
+    CURRENT_BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+    if [[ ${CURRENT_BRANCH_NAME} != "${RC_MASTER_BRANCH_NAME}" ]]; then
+        echo -e "${RED}error, current branch name ${CURRENT_BRANCH_NAME} is different than ${RC_MASTER_BRANCH_NAME} for ${repo_name}${NC}"
+        cd ..
+        cleanup
+        exit 1
+    fi
+
+    echo -e "${GREEN}${repo_name}:${NC} git push origin ${RC_MASTER_BRANCH_NAME}"
+    #git push origin ${RC_MASTER_BRANCH_NAME}
     RC=$?
     if [[ ${RC} != 0 ]]
     then
-        echo -e "${RED}error, failed to add tag for repo ${repo_name}: git tag -a ${NC}"
+        echo -e "${RED}error, failed to: git push origin ${RC_MASTER_BRANCH_NAME}${NC}"
         cd ..
         cleanup
-        exit 3
+        exit 4
     fi
 
-    # pushing tags will done in different script
-    # echo -e "${GREEN}${repo_name}:${NC} git push --tags"
-    # #git push --tags
-    # RC=$?
-    # if [[ ${RC} != 0 ]]
-    # then
-    #     echo -e "${RED}error, failed to: git push --tags in ${repo_name}${NC}"
-    #     cd ..
-    #     cleanup
-    #     exit 4
-    # fi
+    echo -e "${GREEN}${repo_name}:${NC} git push --tags"
+    #git push --tags
+    RC=$?
+    if [[ ${RC} != 0 ]]
+    then
+        echo -e "${RED}error, failed to: git push --tags in ${repo_name}${NC}"
+        cd ..
+        cleanup
+        exit 4
+    fi
 
     cd ..
 done

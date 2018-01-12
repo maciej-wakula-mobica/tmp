@@ -97,7 +97,7 @@ fi
 typeset ALL_REPOS_STRING=`join_by , "${ALL_REPOS[@]}"`
 
 # prepare_clones
-echo -e "${GREEN} prepare_env.sh ${NC}"
+echo -e "${GREEN}*** prepare_env.sh ${NC}"
 ./prepare_env.sh -b ${RC_BRANCH_NAME} -r ${ALL_REPOS_NAMES_STRING} -e ${ALL_REPOS_STRING}
 RC=$?
 if [[ ${RC} != 0 ]]
@@ -118,7 +118,7 @@ fi
 # fi
 
 # update submodules
-echo -e "${GREEN} update_submodules.sh ${NC}"
+echo -e "${GREEN}*** update_submodules.sh ${NC}"
 ./update_submodules.sh -b "${RC_BRANCH_NAME}" -r "${ALL_REPOS_NAMES_STRING}"
 RC=$?
 if [[ ${RC} != 0 ]]
@@ -129,7 +129,7 @@ then
 fi
 
 # merge release candidate to develop/master
-echo -e "${GREEN} merge_rc.sh ${NC}"
+echo -e "${GREEN}*** merge_rc.sh ${NC}"
 ./merge_rc.sh -b "${RC_BRANCH_NAME}" -m "${MASTER_BRANCH_NAME}" -r "${ALL_REPOS_NAMES_STRING}"
 RC=$?
 if [[ ${RC} != 0 ]]
@@ -140,7 +140,7 @@ then
 fi
 
 # tag changes
-echo -e "${GREEN} tag_repos.sh ${NC}"
+echo -e "${GREEN}*** tag_repos.sh ${NC}"
 ./tag_repos.sh -v "${VERSION}" -r "${ALL_REPOS_NAMES_STRING}"
 RC=$?
 if [[ ${RC} != 0 ]]
@@ -151,13 +151,14 @@ then
 fi
 
 # push
-#echo -e "${GREEN}  ${NC}"
-# RC=$?
-# if [[ ${RC} != 0 ]]
-# then
-#     echo -e "${RED}error, failed to prepares clones${NC}"
-#     cleanup
-#     exit 2
-# fi
+echo -e "${GREEN}*** push_repos.sh${NC}"
+./push_repos.sh -m "${MASTER_BRANCH_NAME}" -r "${ALL_REPOS_NAMES_STRING}"
+RC=$?
+if [[ ${RC} != 0 ]]
+then
+    echo -e "${RED}error, failed to push changes${NC}"
+    cleanup
+    exit 2
+fi
 
 exit 0
